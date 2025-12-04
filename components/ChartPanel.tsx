@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   LineChart,
@@ -19,6 +20,7 @@ interface ChartPanelProps {
   dataKeyPrefix?: string; // Not strictly needed with dynamic keys but good for extensibility
   yLabel: string;
   targetLine?: number;
+  onHover?: (velocity: number | null) => void;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -39,7 +41,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const ChartPanel: React.FC<ChartPanelProps> = ({ title, data, fluids, yLabel, targetLine }) => {
+const ChartPanel: React.FC<ChartPanelProps> = ({ title, data, fluids, yLabel, targetLine, onHover }) => {
   return (
     <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 flex flex-col h-[400px]">
       <div className="flex justify-between items-center mb-4">
@@ -49,7 +51,18 @@ const ChartPanel: React.FC<ChartPanelProps> = ({ title, data, fluids, yLabel, ta
       
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 20, bottom: 20, left: 0 }}>
+          <LineChart 
+            data={data} 
+            margin={{ top: 5, right: 20, bottom: 20, left: 0 }}
+            onMouseMove={(state) => {
+              if (onHover && state && state.activeLabel !== undefined) {
+                onHover(Number(state.activeLabel));
+              }
+            }}
+            onMouseLeave={() => {
+              if (onHover) onHover(null);
+            }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
             <XAxis 
               dataKey="velocity" 

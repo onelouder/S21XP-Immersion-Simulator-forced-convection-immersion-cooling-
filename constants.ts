@@ -92,6 +92,12 @@ export const DEFAULT_CONDITIONS: OperatingConditions = {
   maxPowerTarget: 5700, // Approximate S21 XP target
   targetHashrate: 300, // TH/s target
   hashEfficiency: 16.0, // J/TH (S21 XP Spec)
+  
+  // Financial Defaults
+  bitcoinPrice: 93000, // USD
+  baselinePrice: 93000, // USD
+  rewardPerTh: 0.0358, // USD/TH/s/day
+  totalFacilityPowerMW: 1.0, // Default 1 MW facility
 };
 
 // Physics Constants

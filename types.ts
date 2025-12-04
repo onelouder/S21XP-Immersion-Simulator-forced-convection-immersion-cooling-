@@ -30,6 +30,12 @@ export interface OperatingConditions {
   maxPowerTarget: number; // W (Visual reference line only)
   targetHashrate: number; // TH/s (Visual reference line only)
   hashEfficiency: number; // J/TH - Conversion factor from Power to Hashrate
+  
+  // Financial Parameters
+  bitcoinPrice: number; // USD/BTC (P_BTC)
+  baselinePrice: number; // USD/BTC (P_baseline)
+  rewardPerTh: number; // USD/TH/s/day (R_TH)
+  totalFacilityPowerMW: number; // MW - Total available power capacity
 }
 
 export interface SimulationConfig {
@@ -47,5 +53,7 @@ export interface SimulationResult {
   powerData: DataPoint[];
   hashrateData: DataPoint[];
   outletTempData: DataPoint[];
+  revenueData: DataPoint[];
   fluids: FluidProperties[];
+  calculatedMinerCount: number; // Derived from Total Power / Target Power
 }

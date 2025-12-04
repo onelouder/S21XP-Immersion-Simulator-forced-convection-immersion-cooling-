@@ -46,6 +46,7 @@ export const runSimulation = (
   const powerData: DataPoint[] = [];
   const hashrateData: DataPoint[] = [];
   const outletTempData: DataPoint[] = [];
+  const revenueData: DataPoint[] = [];
 
   const activeFluids = AVAILABLE_FLUIDS.filter(f => fluids.includes(f.id));
   
@@ -69,6 +70,13 @@ export const runSimulation = (
   const chipsPerFace = TOTAL_CHIPS / TOTAL_FACES; // 273 / 6 = 45.5 chips
   const R_cond_face = THERMAL_RESISTANCE_CHIP / chipsPerFace; 
 
+  // Jason Wells: Financial / Fleet Sizing
+  // Calculate Number of Miners based on Total Facility Power Capacity.
+  // N = Floor(Total Power / Target Power per Miner)
+  const capacityWatts = cond.totalFacilityPowerMW * 1000000;
+  const targetPowerWatts = cond.maxPowerTarget;
+  const numberOfMiners = Math.floor(capacityWatts / targetPowerWatts);
+
   // Jason Wells: Velocity Sweep Configuration
   // Range: 0.006 m/s to 0.100 m/s (Deeply laminar regime)
   // Step: 1 mm/s for high-resolution plotting.
@@ -82,6 +90,7 @@ export const runSimulation = (
     const pPoint: DataPoint = { velocity: v };
     const hPoint: DataPoint = { velocity: v };
     const tPoint: DataPoint = { velocity: v };
+    const rPoint: DataPoint = { velocity: v };
 
     activeFluids.forEach(fluid => {
       // 1. Calculate Reynolds Number (Re)
@@ -156,23 +165,33 @@ export const runSimulation = (
 
       // 12. Hashrate Calculation
       // Derived from Power using the Efficiency metric (J/TH)
-      // H_total = Q_total / Efficiency
-      const H_total = Q_total / cond.hashEfficiency; // TH/s
+      // H_total = Q_total / cond.hashEfficiency; // TH/s
+      const H_total = Q_total / cond.hashEfficiency;
+
+      // 13. Revenue Calculation
+      // Revenue per Miner = (P_BTC / P_baseline) * R_TH * H_miner
+      // Total Revenue = Revenue per Miner * Number of Miners
+      const revPerMiner = (cond.bitcoinPrice / cond.baselinePrice) * cond.rewardPerTh * H_total;
+      const totalRev = revPerMiner * numberOfMiners;
 
       pPoint[fluid.id] = parseFloat(Q_total.toFixed(2));
       hPoint[fluid.id] = parseFloat(H_total.toFixed(2));
       tPoint[fluid.id] = parseFloat(T_outlet.toFixed(2));
+      rPoint[fluid.id] = parseFloat(totalRev.toFixed(2));
     });
 
     powerData.push(pPoint);
     hashrateData.push(hPoint);
     outletTempData.push(tPoint);
+    revenueData.push(rPoint);
   }
 
   return {
     powerData,
     hashrateData,
     outletTempData,
-    fluids: activeFluids
+    revenueData,
+    fluids: activeFluids,
+    calculatedMinerCount: numberOfMiners
   };
 };
