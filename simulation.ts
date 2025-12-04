@@ -1,6 +1,6 @@
 
 import { FluidProperties, HeatSinkGeometry, OperatingConditions, DataPoint, SimulationResult } from './types';
-import { AVAILABLE_FLUIDS, ALUMINUM_CONDUCTIVITY, TOTAL_FACES, TOTAL_CHIPS, THERMAL_RESISTANCE_CHIP } from './constants';
+import { ALUMINUM_CONDUCTIVITY, TOTAL_FACES, TOTAL_CHIPS, THERMAL_RESISTANCE_CHIP } from './constants';
 
 // Jason Wells:
 // This simulation engine implements the "Improved S21 XP Forced Convection Analytical Solution".
@@ -39,7 +39,8 @@ const calculateNusseltStandard = (
 };
 
 export const runSimulation = (
-  fluids: string[],
+  allFluids: FluidProperties[], // Accepted as arg now, allowing user edits
+  selectedFluidIds: string[],
   geo: HeatSinkGeometry,
   cond: OperatingConditions
 ): SimulationResult => {
@@ -48,7 +49,7 @@ export const runSimulation = (
   const outletTempData: DataPoint[] = [];
   const revenueData: DataPoint[] = [];
 
-  const activeFluids = AVAILABLE_FLUIDS.filter(f => fluids.includes(f.id));
+  const activeFluids = allFluids.filter(f => selectedFluidIds.includes(f.id));
   
   // Jason Wells: Geometry Pre-calculation
   // Matches PDF Page 2 "Heat Sink Geometry per Face".

@@ -4,15 +4,19 @@ import Sidebar from './components/Sidebar';
 import ChartPanel from './components/ChartPanel';
 import FinancialCalculator from './components/FinancialCalculator';
 import EquationsModal from './components/EquationsModal';
-import { DEFAULT_GEOMETRY, DEFAULT_CONDITIONS } from './constants';
+import { DEFAULT_GEOMETRY, DEFAULT_CONDITIONS, AVAILABLE_FLUIDS } from './constants';
 import { runSimulation } from './simulation';
-import { HeatSinkGeometry, OperatingConditions } from './types';
+import { HeatSinkGeometry, OperatingConditions, FluidProperties } from './types';
 import { LayoutDashboard, BookOpen, Activity } from 'lucide-react';
 
 // Jason Wells: Main Application Component
 // Orchestrates the data flow: User Inputs -> Simulation Engine -> Results -> Charts.
 const App: React.FC = () => {
-  const [fluids, setFluids] = useState<string[]>(['dcf281', 'novel_mpao', 'castrol_dc15']);
+  // State for Fluid Definitons (allows editing properties)
+  const [fluidSpecs, setFluidSpecs] = useState<FluidProperties[]>(AVAILABLE_FLUIDS);
+  // State for Selected Fluids (by ID)
+  const [selectedFluidIds, setSelectedFluidIds] = useState<string[]>(['dcf281', 'novel_mpao', 'castrol_dc15']);
+  
   const [geometry, setGeometry] = useState<HeatSinkGeometry>(DEFAULT_GEOMETRY);
   const [conditions, setConditions] = useState<OperatingConditions>(DEFAULT_CONDITIONS);
   const [showEquations, setShowEquations] = useState(false);
@@ -21,7 +25,8 @@ const App: React.FC = () => {
   // We capture performance metrics here to give the user feedback on computational cost.
   const { results, perfMetrics } = useMemo(() => {
     const start = performance.now();
-    const res = runSimulation(fluids, geometry, conditions);
+    // Pass the full fluidSpecs array so user edits are reflected in sim
+    const res = runSimulation(fluidSpecs, selectedFluidIds, geometry, conditions);
     const end = performance.now();
 
     const count = res.powerData.length * res.fluids.length;
@@ -33,14 +38,16 @@ const App: React.FC = () => {
         dataPoints: count
       }
     };
-  }, [fluids, geometry, conditions]);
+  }, [fluidSpecs, selectedFluidIds, geometry, conditions]);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-950">
       {/* Sidebar - Controls for Geometry, Fluids, and Operating Conditions */}
       <Sidebar
-        fluids={fluids}
-        setFluids={setFluids}
+        allFluids={fluidSpecs}
+        setAllFluids={setFluidSpecs}
+        selectedFluids={selectedFluidIds}
+        setSelectedFluids={setSelectedFluidIds}
         geometry={geometry}
         setGeometry={setGeometry}
         conditions={conditions}
