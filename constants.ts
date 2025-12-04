@@ -85,19 +85,19 @@ export const DEFAULT_GEOMETRY: HeatSinkGeometry = {
 };
 
 // Jason Wells: Default operating parameters.
-// Hash Efficiency of 16.0 J/TH is the standard S21 XP specification.
+// Hash Efficiency updated to 14.5 J/TH as per latest user requirement.
 export const DEFAULT_CONDITIONS: OperatingConditions = {
   junctionTemp: 70, // Conservative default, user can max to 85
   inletTemp: 40,
   maxPowerTarget: 5700, // Approximate S21 XP target
   targetHashrate: 300, // TH/s target
-  hashEfficiency: 16.0, // J/TH (S21 XP Spec)
+  hashEfficiency: 14.5, // J/TH (Updated default)
   
   // Financial Defaults
   bitcoinPrice: 93000, // USD
   baselinePrice: 93000, // USD
   rewardPerTh: 0.0358, // USD/TH/s/day
-  totalFacilityPowerMW: 1.0, // Default 1 MW facility
+  totalFacilityPowerMW: 300.0, // Default 300 MW facility as requested
 };
 
 // Physics Constants

@@ -30,11 +30,21 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleGeoChange = (key: keyof HeatSinkGeometry, value: string) => {
-    setGeometry({ ...geometry, [key]: parseFloat(value) || 0 });
+    const val = parseFloat(value);
+    if (val < 0) return;
+    setGeometry({ ...geometry, [key]: isNaN(val) ? 0 : val });
   };
 
   const handleCondChange = (key: keyof OperatingConditions, value: string) => {
-    setConditions({ ...conditions, [key]: parseFloat(value) || 0 });
+    const val = parseFloat(value);
+    if (val < 0) return;
+    setConditions({ ...conditions, [key]: isNaN(val) ? 0 : val });
+  };
+
+  const preventNegative = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
   };
 
   return (
@@ -115,9 +125,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <input
                         type="number"
                         step="0.001"
+                        min="0"
                         className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
                         value={geometry[field.key as keyof HeatSinkGeometry]}
                         onChange={(e) => handleGeoChange(field.key as keyof HeatSinkGeometry, e.target.value)}
+                        onKeyDown={preventNegative}
                     />
                 </div>
             ))}
@@ -138,9 +150,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
                 <input
                     type="number"
+                    min="0"
                     className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
                     value={conditions.junctionTemp}
                     onChange={(e) => handleCondChange('junctionTemp', e.target.value)}
+                    onKeyDown={preventNegative}
                 />
             </div>
             <div>
@@ -150,9 +164,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
                 <input
                     type="number"
+                    min="0"
                     className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
                     value={conditions.inletTemp}
                     onChange={(e) => handleCondChange('inletTemp', e.target.value)}
+                    onKeyDown={preventNegative}
                 />
             </div>
              <div>
@@ -162,9 +178,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
                 <input
                     type="number"
+                    min="0"
                     className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
                     value={conditions.maxPowerTarget}
                     onChange={(e) => handleCondChange('maxPowerTarget', e.target.value)}
+                    onKeyDown={preventNegative}
                 />
             </div>
              <div>
@@ -174,9 +192,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
                 <input
                     type="number"
+                    min="0"
                     className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
                     value={conditions.targetHashrate}
                     onChange={(e) => handleCondChange('targetHashrate', e.target.value)}
+                    onKeyDown={preventNegative}
                 />
             </div>
             <div>
@@ -187,12 +207,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <input
                     type="number"
                     step="0.1"
-                    min="10"
-                    max="30"
-                    className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
+                    min="0"
+                    className={`w-full bg-slate-950 border rounded px-2 py-1 text-slate-200 focus:outline-none transition-colors ${conditions.hashEfficiency < 10 ? 'border-red-500 focus:border-red-500' : 'border-slate-700 focus:border-blue-500'}`}
                     value={conditions.hashEfficiency}
                     onChange={(e) => handleCondChange('hashEfficiency', e.target.value)}
+                    onKeyDown={preventNegative}
                 />
+                {conditions.hashEfficiency < 10 && (
+                    <p className="text-red-400 text-[10px] mt-1 italic">
+                        Currently Hashrate Efficiencies below 10 J/TH are not realistic.
+                    </p>
+                )}
             </div>
         </div>
       </div>

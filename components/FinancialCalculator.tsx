@@ -18,7 +18,15 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
   const [hoveredVelocity, setHoveredVelocity] = useState<number | null>(null);
 
   const handleChange = (key: keyof OperatingConditions, value: string) => {
-    setConditions({ ...conditions, [key]: parseFloat(value) || 0 });
+    const val = parseFloat(value);
+    if (val < 0) return;
+    setConditions({ ...conditions, [key]: isNaN(val) ? 0 : val });
+  };
+
+  const preventNegative = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
   };
 
   // Calculate Nominal Fleet Power (MW) based on calculated miner count
@@ -33,16 +41,20 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
   const powerPoint = results.powerData.find(p => Math.abs(p.velocity - activeVelocity) < 0.0001);
   const revenuePoint = results.revenueData.find(p => Math.abs(p.velocity - activeVelocity) < 0.0001);
 
-  // Calculate Baseline (Lowest) Revenue for Delta Calculation
+  // Calculate Baseline (Lowest) and Highest Revenue for visual comparisons
   let minRevenue = Number.MAX_VALUE;
+  let maxRevenue = Number.MIN_VALUE;
+
   if (revenuePoint) {
       results.fluids.forEach(f => {
           const r = revenuePoint[f.id] || 0;
           if (r < minRevenue) minRevenue = r;
+          if (r > maxRevenue) maxRevenue = r;
       });
   }
-  // Safety check if no data is found (e.g. infinite minRevenue)
+  // Safety check if no data is found
   if (minRevenue === Number.MAX_VALUE) minRevenue = 0;
+  if (maxRevenue === Number.MIN_VALUE) maxRevenue = 0;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mt-6 shadow-lg">
@@ -71,11 +83,12 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
                 <div className="relative">
                   <input
                     type="number"
-                    min="0.1"
+                    min="0"
                     step="0.1"
                     className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500 transition-colors"
                     value={conditions.totalFacilityPowerMW}
                     onChange={(e) => handleChange('totalFacilityPowerMW', e.target.value)}
+                    onKeyDown={preventNegative}
                   />
                   <span className="absolute right-3 top-2 text-xs text-slate-600">MW</span>
                 </div>
@@ -125,21 +138,33 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
                             // Check if exceeding capacity for visual warning
                             const isOverCapacity = totalFleetPowerMW > conditions.totalFacilityPowerMW;
 
+                            // Check if this is the highest revenue row (winner)
+                            const isHighest = totalRevenue === maxRevenue && maxRevenue > 0;
+
                             return (
-                                <tr key={fluid.id} className="group hover:bg-white/5 transition-colors duration-200">
-                                    <td className="py-2 pl-1">
+                                <tr 
+                                  key={fluid.id} 
+                                  className={`group transition-all duration-200 ${
+                                    isHighest 
+                                      ? 'bg-emerald-900/20 ring-1 ring-emerald-500/30' 
+                                      : 'hover:bg-white/5'
+                                  }`}
+                                >
+                                    <td className="py-2 pl-2">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: fluid.color }} />
-                                            <span className="text-slate-300 font-medium">{fluid.name}</span>
+                                            <span className={`text-slate-300 font-medium ${isHighest ? 'text-white' : ''}`}>
+                                              {fluid.name}
+                                            </span>
                                         </div>
                                     </td>
                                     <td className={`py-2 text-right font-mono ${isOverCapacity ? 'text-red-400' : 'text-slate-300'}`}>
                                         {totalFleetPowerMW.toFixed(2)}
                                     </td>
-                                    <td className="py-2 text-right font-mono text-green-400">
+                                    <td className={`py-2 text-right font-mono ${isHighest ? 'text-emerald-300 font-bold' : 'text-green-400'}`}>
                                         ${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                     </td>
-                                    <td className={`py-2 text-right font-mono font-bold ${delta > 0 ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                    <td className={`py-2 pr-2 text-right font-mono font-bold ${delta > 0 ? 'text-emerald-400' : 'text-slate-600'}`}>
                                         {delta === 0 ? '-' : `+$${delta.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
                                     </td>
                                 </tr>
@@ -165,9 +190,11 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
                   <span className="absolute left-3 top-2 text-slate-500">$</span>
                   <input
                     type="number"
+                    min="0"
                     className="w-full bg-slate-900 border border-slate-700 rounded pl-6 pr-3 py-2 text-slate-200 focus:outline-none focus:border-yellow-500 transition-colors"
                     value={conditions.bitcoinPrice}
                     onChange={(e) => handleChange('bitcoinPrice', e.target.value)}
+                    onKeyDown={preventNegative}
                   />
                 </div>
               </div>
@@ -178,10 +205,12 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
                   <span className="absolute left-3 top-2 text-slate-500">$</span>
                   <input
                     type="number"
+                    min="0"
                     step="0.0001"
                     className="w-full bg-slate-900 border border-slate-700 rounded pl-6 pr-3 py-2 text-slate-200 focus:outline-none focus:border-yellow-500 transition-colors"
                     value={conditions.rewardPerTh}
                     onChange={(e) => handleChange('rewardPerTh', e.target.value)}
+                    onKeyDown={preventNegative}
                   />
                   <span className="absolute right-3 top-2 text-xs text-slate-600">/day</span>
                 </div>
