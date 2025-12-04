@@ -1,0 +1,5 @@
+{
+  "name": "S21 XP Immersion Sim",
+  "description": "Analytical simulation of forced convection heat transfer for Antminer S21 XP Immersion systems, calculating Power Dissipation and Hashrate vs. Flow Velocity.",
+  "requestFramePermissions": []
+}
