@@ -29,7 +29,7 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
   const activeVelocity = hoveredVelocity !== null ? hoveredVelocity : 0.05;
 
   // Find data points for the active velocity
-  // Note: Using a small epsilon for float comparison safety, though simulation steps are integer-based (mm/s).
+  // Note: Using a small epsilon for float comparison safety.
   const powerPoint = results.powerData.find(p => Math.abs(p.velocity - activeVelocity) < 0.0001);
   const revenuePoint = results.revenueData.find(p => Math.abs(p.velocity - activeVelocity) < 0.0001);
 
@@ -41,6 +41,7 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
           if (r < minRevenue) minRevenue = r;
       });
   }
+  // Safety check if no data is found (e.g. infinite minRevenue)
   if (minRevenue === Number.MAX_VALUE) minRevenue = 0;
 
   return (
@@ -106,15 +107,18 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
                     <thead>
                         <tr className="border-b border-slate-800 text-slate-500">
                             <th className="pb-2 pl-1 font-medium">Fluid</th>
-                            <th className="pb-2 text-right font-medium">Total Power</th>
+                            <th className="pb-2 text-right font-medium">Total Power (MW)</th>
                             <th className="pb-2 text-right font-medium">Daily Rev</th>
                             <th className="pb-2 text-right font-medium">Delta Revenue</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/50">
                         {results.fluids.map(fluid => {
+                            // Get single miner power at active velocity
                             const powerPerMiner = powerPoint ? (powerPoint[fluid.id] || 0) : 0;
+                            // Scale to fleet size (convert W to MW)
                             const totalFleetPowerMW = (powerPerMiner * minerCount) / 1000000;
+                            
                             const totalRevenue = revenuePoint ? (revenuePoint[fluid.id] || 0) : 0;
                             const delta = totalRevenue - minRevenue;
                             
@@ -130,7 +134,7 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
                                         </div>
                                     </td>
                                     <td className={`py-2 text-right font-mono ${isOverCapacity ? 'text-red-400' : 'text-slate-300'}`}>
-                                        {totalFleetPowerMW.toFixed(2)} MW
+                                        {totalFleetPowerMW.toFixed(2)}
                                     </td>
                                     <td className="py-2 text-right font-mono text-green-400">
                                         ${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -168,8 +172,6 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
                 </div>
               </div>
               
-              {/* Baseline Price removed as requested */}
-
               <div>
                 <label className="block text-xs text-slate-400 mb-1">Reward per TH/s</label>
                 <div className="relative">
@@ -202,7 +204,7 @@ const FinancialCalculator: React.FC<FinancialCalculatorProps> = ({
              <div className="mt-4 p-4 bg-blue-900/10 border border-blue-900/30 rounded-lg text-xs text-blue-300">
                 <p className="flex items-start gap-2">
                 <TrendingUp className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>Revenue scales linearly with Hashrate. Increasing flow velocity improves cooling, allowing higher sustained hashrates and thus higher daily revenue.</span>
+                <span>Revenue scales linearly with Hashrate. Increasing flow velocity improves cooling, allowing higher sustained hashrates and thus higher daily revenue. Hover over the chart to see economic details for a specific velocity.</span>
                 </p>
             </div>
         </div>
