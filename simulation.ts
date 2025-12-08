@@ -125,7 +125,10 @@ export const runSimulation = (
 
       // 7. Mass Flow Rate (m_dot)
       // Mass flow through the frontal area of one face (Step 11).
-      const m_dot = fluid.density * v * A_front;
+      // Adjusted for Bypass Flow: Only a percentage of fluid actually exchanges heat.
+      // Bypass = % of fluid flowing AROUND fins (ineffective).
+      const bypassFactor = 1 - (cond.bypassFlowPercentage / 100);
+      const m_dot = fluid.density * v * A_front * bypassFactor;
 
       // 8. NTU and Effectiveness (epsilon)
       // Using epsilon-NTU method for heat exchangers (Step 12).

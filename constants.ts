@@ -98,6 +98,8 @@ export const DEFAULT_CONDITIONS: OperatingConditions = {
   baselinePrice: 93000, // USD
   rewardPerTh: 0.0358, // USD/TH/s/day
   totalFacilityPowerMW: 300.0, // Default 300 MW facility as requested
+  
+  bypassFlowPercentage: 20.0, // Default 20% bypass assumption
 };
 
 // Physics Constants

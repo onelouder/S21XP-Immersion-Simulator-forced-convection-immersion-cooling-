@@ -36,6 +36,8 @@ export interface OperatingConditions {
   baselinePrice: number; // USD/BTC (P_baseline)
   rewardPerTh: number; // USD/TH/s/day (R_TH)
   totalFacilityPowerMW: number; // MW - Total available power capacity
+  
+  bypassFlowPercentage: number; // % of fluid bypassing heatsink
 }
 
 export interface SimulationConfig {

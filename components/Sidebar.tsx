@@ -377,6 +377,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                     onKeyDown={preventNegative}
                 />
             </div>
+            <div>
+                <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Bypass Flow</span>
+                    <span>%</span>
+                </div>
+                <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
+                    value={conditions.bypassFlowPercentage}
+                    onChange={(e) => handleCondChange('bypassFlowPercentage', e.target.value)}
+                    onKeyDown={preventNegative}
+                />
+            </div>
              <div>
                 <div className="flex justify-between text-xs text-slate-400 mb-1">
                     <span>Target Power (Ref)</span>
